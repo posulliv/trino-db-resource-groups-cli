@@ -25,8 +25,11 @@ public class Cli
     @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit")
     public boolean usageHelpRequested;
 
-    @CommandLine.Parameters(index = "0", paramLabel = "<file>", description = "Configuration file")
+    @CommandLine.Option(names = "--db-config", required = true, description = "Properties file with resource groups database config")
     public String configFilename;
+
+    @CommandLine.Option(names = "--resource-groups-json", required = true, description = "JSON file with resource groups schema to load")
+    public String resourceGroupsSchema;
 
     private Cli() {}
 
@@ -56,6 +59,7 @@ public class Cli
             DbResourceGroupConfig config = injector.getInstance(DbResourceGroupConfig.class);
             injector.injectMembers(this);
             LOG.info("resource group DB URL %s", config.getConfigDbUrl());
+            LOG.info("resource group schema file %s", resourceGroupsSchema);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
