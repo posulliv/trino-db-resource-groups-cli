@@ -30,6 +30,9 @@ public class Cli
     @CommandLine.Option(names = "--resource-groups-json", required = true, description = "JSON file with resource groups schema to load")
     public String resourceGroupsSchema;
 
+    @CommandLine.Option(names = "--environment", defaultValue = "test", required = true, description = "Environment where resource groups will be used (matches environment in node.properties")
+    public String environment;
+
     private Cli() {}
 
     @Override
@@ -57,6 +60,7 @@ public class Cli
         try {
             DbResourceGroupConfig config = injector.getInstance(DbResourceGroupConfig.class);
             injector.injectMembers(this);
+            LOG.info("environment for resource groups %s", environment);
             LOG.info("resource group DB URL %s", config.getConfigDbUrl());
             LOG.info("resource group schema file %s", resourceGroupsSchema);
             ManagerSpec managerSpec = FileBasedResourceGroups.parseResourceGroupsSchema(resourceGroupsSchema);
