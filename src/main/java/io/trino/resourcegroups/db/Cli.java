@@ -7,6 +7,9 @@ import io.airlift.bootstrap.Bootstrap;
 import io.airlift.bootstrap.LifeCycleManager;
 import io.airlift.log.Logger;
 import io.trino.plugin.resourcegroups.ManagerSpec;
+import io.trino.plugin.resourcegroups.ResourceGroupIdTemplate;
+import io.trino.plugin.resourcegroups.ResourceGroupSpec;
+import io.trino.plugin.resourcegroups.SelectorSpec;
 import io.trino.plugin.resourcegroups.db.DbResourceGroupConfig;
 import picocli.CommandLine;
 
@@ -68,6 +71,17 @@ public class Cli
             ResourceGroupsDao dao = injector.getInstance(ResourceGroupsDao.class);
             LOG.info("CPU quota period %s", managerSpec.getCpuQuotaPeriod());
             dao.setCpuQuotaPeriod(managerSpec.getCpuQuotaPeriod().get().toString());
+            // insert root groups and all children
+            dao.truncateTable("resource_groups");
+            for (ResourceGroupSpec resourceGroup : managerSpec.getRootGroups()) {
+                dao.insertResourceGroup(resourceGroup, environment, null);
+            }
+            // insert selectors
+            for (SelectorSpec selector : managerSpec.getSelectors()) {
+                ResourceGroupIdTemplate resourceGroupIdTemplate = selector.getGroup();
+                LOG.info("selector %s has group %s", selector.getUserRegex(), resourceGroupIdTemplate);
+                LOG.info("segments %s", resourceGroupIdTemplate.getSegments());
+            }
         }
         catch (Exception e) {
             throw new RuntimeException(e);
