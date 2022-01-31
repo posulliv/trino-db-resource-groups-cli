@@ -65,6 +65,9 @@ public class Cli
             LOG.info("resource group schema file %s", resourceGroupsSchema);
             ManagerSpec managerSpec = FileBasedResourceGroups.parseResourceGroupsSchema(resourceGroupsSchema);
             LOG.info("we have %d root groups", managerSpec.getRootGroups().size());
+            ResourceGroupsDao dao = injector.getInstance(ResourceGroupsDao.class);
+            LOG.info("CPU quota period %s", managerSpec.getCpuQuotaPeriod());
+            dao.setCpuQuotaPeriod(managerSpec.getCpuQuotaPeriod().get().toString());
         }
         catch (Exception e) {
             throw new RuntimeException(e);
