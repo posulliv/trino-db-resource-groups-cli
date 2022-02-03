@@ -16,6 +16,7 @@ package io.trino.resourcegroups.db;
 import io.trino.plugin.resourcegroups.ManagerSpec;
 import io.trino.plugin.resourcegroups.ResourceGroupIdTemplate;
 import io.trino.plugin.resourcegroups.ResourceGroupNameTemplate;
+import io.trino.plugin.resourcegroups.ResourceGroupSpec;
 import io.trino.plugin.resourcegroups.SelectorSpec;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class ManagerSpecToJson
     {
         return "{\n" +
                 INDENT +
-                resourceGroups() +
+                resourceGroups(managerSpec.getRootGroups()) +
                 ",\n" +
                 INDENT +
                 selectors(managerSpec.getSelectors()) +
@@ -40,18 +41,42 @@ public class ManagerSpecToJson
                 "\n}\n";
     }
 
-    private static String resourceGroups()
+    private static String resourceGroups(List<ResourceGroupSpec> rootGroups)
     {
         return "\"rootGroups\": [\n" +
-               indent(2) +
-                "{ }\n" +
+                allResourceGroups(rootGroups, 2) +
+                "\n" +
                 indent(1) +
                 "]";
     }
 
-    private static String resourceGroup()
+    private static String allResourceGroups(List<ResourceGroupSpec> resourceGroupSpecs, int indentationLevel)
     {
-        return null;
+        return String.join(
+                ",\n",
+                resourceGroupSpecs
+                        .stream()
+                        .map(resourceGroupSpec -> resourceGroup(resourceGroupSpec, indentationLevel))
+                        .collect(Collectors.toList())
+        );
+    }
+
+    private static String resourceGroup(ResourceGroupSpec resourceGroupSpec, int indentationLevel)
+    {
+        return indent(indentationLevel) +
+                "{\n" +
+                groupName(resourceGroupSpec, indentationLevel + 1) +
+                softMemoryLimit(resourceGroupSpec, indentationLevel + 1) +
+                hardConcurrencyLimit(resourceGroupSpec, indentationLevel + 1) +
+                maxQueued(resourceGroupSpec, indentationLevel + 1) +
+                schedulingPolicy(resourceGroupSpec, indentationLevel + 1) +
+                schedulingWeight(resourceGroupSpec, indentationLevel + 1) +
+                jmxExport(resourceGroupSpec, indentationLevel + 1) +
+                softCpuLimit(resourceGroupSpec, indentationLevel + 1) +
+                hardCpuLimit(resourceGroupSpec, indentationLevel + 1) +
+                subGroups(resourceGroupSpec, indentationLevel + 1) +
+                indent(indentationLevel) +
+                "}";
     }
 
     private static String selectors(List<SelectorSpec> selectorSpecList)
@@ -160,5 +185,86 @@ public class ManagerSpecToJson
                         .collect(Collectors.toList())
         );
         return indent(3) + "\"group\": \"" + resourceGroupName + "\"\n";
+    }
+
+    private static String groupName(ResourceGroupSpec resourceGroupSpec, int indentationLevel)
+    {
+        ResourceGroupNameTemplate resourceGroupNameTemplate = resourceGroupSpec.getName();
+        return indent(indentationLevel) + "\"name\": \"" + resourceGroupNameTemplate.toString() + "\",\n";
+    }
+
+    private static String softMemoryLimit(ResourceGroupSpec resourceGroupSpec, int indentationLevel)
+    {
+        if (resourceGroupSpec.getSoftMemoryLimitFraction().isPresent()) {
+            return indent(indentationLevel) + "\"softMemoryLimit\": \"" + (int)(resourceGroupSpec.getSoftMemoryLimitFraction().get() * 100) + "%\",\n";
+        } else if (resourceGroupSpec.getSoftMemoryLimit().isPresent()) {
+            return resourceGroupSpec.getSoftMemoryLimit().get().toString();
+        }
+        return "";
+    }
+
+    private static String hardConcurrencyLimit(ResourceGroupSpec resourceGroupSpec, int indentationLevel)
+    {
+        return indent(indentationLevel) + "\"hardConcurrencyLimit\": " + resourceGroupSpec.getHardConcurrencyLimit() + ",\n";
+    }
+
+    private static String maxQueued(ResourceGroupSpec resourceGroupSpec, int indentationLevel)
+    {
+        return indent(indentationLevel) + "\"maxQueued\": " + resourceGroupSpec.getMaxQueued() + ",\n";
+    }
+
+    private static String schedulingPolicy(ResourceGroupSpec resourceGroupSpec, int indentationLevel)
+    {
+        if (resourceGroupSpec.getSchedulingPolicy().isPresent()) {
+            return indent(indentationLevel) + "\"schedulingPolicy\": \"" + resourceGroupSpec.getSchedulingPolicy() + "\",\n";
+        }
+        return "";
+    }
+
+    private static String schedulingWeight(ResourceGroupSpec resourceGroupSpec, int indentationLevel)
+    {
+        if (resourceGroupSpec.getSchedulingWeight().isPresent()) {
+            return indent(indentationLevel) + "\"schedulingWeight\": " + resourceGroupSpec.getSchedulingWeight().get() + ",\n";
+        }
+        return "";
+    }
+
+    private static String jmxExport(ResourceGroupSpec resourceGroupSpec, int indentationLevel)
+    {
+        if (resourceGroupSpec.getJmxExport().isPresent()) {
+            return indent(indentationLevel) + "\"jmxExport\": " + resourceGroupSpec.getJmxExport().get() + ",\n";
+        }
+        return "";
+    }
+
+    private static String softCpuLimit(ResourceGroupSpec resourceGroupSpec, int indentationLevel)
+    {
+        if (resourceGroupSpec.getSoftCpuLimit().isPresent()) {
+            return indent(indentationLevel) + "\"softCpuLimit\": \"" + resourceGroupSpec.getSoftCpuLimit().get().toString() + "\",\n";
+        }
+        return "";
+    }
+
+    private static String hardCpuLimit(ResourceGroupSpec resourceGroupSpec, int indentationLevel)
+    {
+        if (resourceGroupSpec.getHardCpuLimit().isPresent()) {
+            return indent(indentationLevel) + "\"hardCpuLimit\": \"" + resourceGroupSpec.getHardCpuLimit().get().toString() + "\",\n";
+        }
+        return "";
+    }
+
+    private static String subGroups(ResourceGroupSpec resourceGroupSpec, int indentationLevel)
+    {
+        if (resourceGroupSpec.getSubGroups().isEmpty()) {
+            return "";
+        }
+        String subGroupString = String.join(
+                ",\n",
+                resourceGroupSpec.getSubGroups()
+                        .stream()
+                        .map(subGroupSpec -> resourceGroup(subGroupSpec, indentationLevel + 1))
+                        .collect(Collectors.toList())
+        );
+        return indent(indentationLevel) + "\"subGroups\": [\n" + subGroupString + "]\n";
     }
 }
