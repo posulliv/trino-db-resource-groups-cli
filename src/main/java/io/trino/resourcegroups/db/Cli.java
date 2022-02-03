@@ -71,16 +71,21 @@ public class Cli
             ResourceGroupsDao dao = injector.getInstance(ResourceGroupsDao.class);
             LOG.info("CPU quota period %s", managerSpec.getCpuQuotaPeriod());
             dao.setCpuQuotaPeriod(managerSpec.getCpuQuotaPeriod().get().toString());
-            // insert root groups and all children
+            // truncating resource_groups table will remove all rows
+            // in tables with foreign key constraints on resource_groups
             dao.truncateTable("resource_groups");
+            // insert root groups and all children
             for (ResourceGroupSpec resourceGroup : managerSpec.getRootGroups()) {
                 dao.insertResourceGroup(resourceGroup, environment, null);
             }
-            // insert selectors
+            // userGroup rule in DB selectors is not supported.
+            // PR in trino has been opened to add support for this.
+            int priority = managerSpec.getSelectors().size();
             for (SelectorSpec selector : managerSpec.getSelectors()) {
                 ResourceGroupIdTemplate resourceGroupIdTemplate = selector.getGroup();
                 LOG.info("selector %s has group %s", selector.getUserRegex(), resourceGroupIdTemplate);
-                LOG.info("segments %s", resourceGroupIdTemplate.getSegments());
+                dao.insertSelector(selector, priority);
+                priority--;
             }
         }
         catch (Exception e) {
