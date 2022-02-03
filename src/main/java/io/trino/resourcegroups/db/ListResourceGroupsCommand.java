@@ -97,8 +97,8 @@ public class ListResourceGroupsCommand
             ManagerSpec managerSpec = loadResourceGroupsFromDb(dao);
             LOG.info("loaded %d root groups", managerSpec.getRootGroups().size());
             LOG.info("loaded %d selectors", managerSpec.getSelectors().size());
-            ObjectMapper mapper = new ObjectMapper();
-            writeJsonToFile(mapper.writeValueAsString(managerSpec));
+            String resourceGroupsJson = ManagerSpecToJson.convert(managerSpec);
+            writeJsonToFile(resourceGroupsJson);
             LOG.info("Resource groups written to %s successfully", outputJsonFile);
         }
         catch (Exception e) {
