@@ -28,13 +28,13 @@ import picocli.CommandLine;
 import static com.google.common.base.Throwables.throwIfUnchecked;
 
 @CommandLine.Command(
-        name = "create_resource_groups",
+        name = "list_resource_groups",
         usageHelpAutoWidth = true
 )
-public class CreateResourceGroupsCommand
+public class ListResourceGroupsCommand
         implements Runnable
 {
-    private static final Logger LOG = Logger.get(CreateResourceGroupsCommand.class);
+    private static final Logger LOG = Logger.get(ListResourceGroupsCommand.class);
 
     @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit")
     public boolean usageHelpRequested;
@@ -42,13 +42,10 @@ public class CreateResourceGroupsCommand
     @CommandLine.Option(names = "--db-config", required = true, description = "Properties file with resource groups database config")
     public String configFilename;
 
-    @CommandLine.Option(names = "--resource-groups-json", required = true, description = "JSON file with resource groups schema to load")
-    public String resourceGroupsSchema;
-
-    @CommandLine.Option(names = "--environment", defaultValue = "test", required = true, description = "Environment where resource groups will be used (matches environment in node.properties)")
+    @CommandLine.Option(names = "--environment", defaultValue = "test", required = true, description = "Environment where resource groups will be retrieved from (matches environment in node.properties)")
     public String environment;
 
-    private CreateResourceGroupsCommand() {}
+    private ListResourceGroupsCommand() {}
 
     @Override
     public void run()
@@ -74,27 +71,10 @@ public class CreateResourceGroupsCommand
 
         try {
             injector.injectMembers(this);
-            LOG.info("Environment to update resource groups for: %s", environment);
-            LOG.info("Input JSON file: %s", resourceGroupsSchema);
-            ManagerSpec managerSpec = FileBasedResourceGroups.parseResourceGroupsSchema(resourceGroupsSchema);
+            LOG.info("Environment to list resource groups for: %s", environment);
+            // Need to load resource groups from DB
             ResourceGroupsDao dao = injector.getInstance(ResourceGroupsDao.class);
-            dao.setCpuQuotaPeriod(managerSpec.getCpuQuotaPeriod().get().toString());
-            // truncating resource_groups table will remove all rows
-            // in tables with foreign key constraints on resource_groups
-            dao.truncateTable("resource_groups");
-            // insert root groups and all children
-            for (ResourceGroupSpec resourceGroup : managerSpec.getRootGroups()) {
-                dao.insertResourceGroup(resourceGroup, environment, null);
-            }
-            // userGroup rule in DB selectors is not supported.
-            // PR in trino has been opened to add support for this.
-            int priority = managerSpec.getSelectors().size();
-            for (SelectorSpec selector : managerSpec.getSelectors()) {
-                ResourceGroupIdTemplate resourceGroupIdTemplate = selector.getGroup();
-                dao.insertSelector(selector, priority);
-                priority--;
-            }
-            LOG.info("Resource groups created successfully");
+            LOG.info("Resource groups retrieved successfully");
         }
         catch (Exception e) {
             throw new RuntimeException(e);

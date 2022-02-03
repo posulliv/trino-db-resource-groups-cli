@@ -18,7 +18,10 @@ import picocli.CommandLine;
 @CommandLine.Command(
         name = "trino-db-resource-groups-cli",
         usageHelpAutoWidth = true,
-        subcommands = { CreateResourceGroupsCommand.class }
+        subcommands = {
+                CreateResourceGroupsCommand.class,
+                ListResourceGroupsCommand.class
+        }
 )
 public class Cli
 {
