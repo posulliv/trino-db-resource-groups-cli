@@ -17,11 +17,15 @@ import io.trino.plugin.resourcegroups.ResourceGroupIdTemplate;
 import io.trino.plugin.resourcegroups.ResourceGroupNameTemplate;
 import io.trino.plugin.resourcegroups.ResourceGroupSpec;
 import io.trino.plugin.resourcegroups.SelectorSpec;
+import io.trino.plugin.resourcegroups.db.ResourceGroupGlobalProperties;
+import io.trino.plugin.resourcegroups.db.ResourceGroupSpecBuilder;
+import io.trino.plugin.resourcegroups.db.SelectorRecord;
 import org.jdbi.v3.sqlobject.SqlObject;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
+import org.jdbi.v3.sqlobject.statement.UseRowMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -110,6 +114,26 @@ public interface ResourceGroupsDao
     @SqlUpdate("INSERT INTO resource_groups (name, soft_memory_limit, max_queued, soft_concurrency_limit, hard_concurrency_limit, scheduling_policy, scheduling_weight, jmx_export, soft_cpu_limit, hard_cpu_limit, parent, environment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
     @GetGeneratedKeys("resource_group_id")
     int insertResourceGroup(String name, String softMemoryLimit, int maxQueued, Integer softConcurrencyLimit, int hardConcurrencyLimit, String schedulingPolicy, Integer schedulingWeight, boolean jmxExport, String softCpuLimit, String hardCpuLimit, Integer parent, String environment);
+
+    @SqlQuery("SELECT resource_group_id, name, soft_memory_limit, max_queued, soft_concurrency_limit, " +
+            "  hard_concurrency_limit, scheduling_policy, scheduling_weight, jmx_export, soft_cpu_limit, " +
+            "  hard_cpu_limit, parent\n" +
+            "FROM resource_groups\n" +
+            "WHERE environment = :environment\n")
+    @UseRowMapper(ResourceGroupSpecBuilder.Mapper.class)
+    List<ResourceGroupSpecBuilder> getResourceGroups(@Bind("environment") String environment);
+
+    @SqlQuery("SELECT S.resource_group_id, S.priority, S.user_regex, S.source_regex, S.query_type, S.client_tags, S.selector_resource_estimate, S.user_group_regex\n" +
+            "FROM selectors S\n" +
+            "JOIN resource_groups R ON (S.resource_group_id = R.resource_group_id)\n" +
+            "WHERE R.environment = :environment\n" +
+            "ORDER by priority DESC")
+    @UseRowMapper(SelectorRecord.Mapper.class)
+    List<SelectorRecord> getSelectors(@Bind("environment") String environment);
+
+    @SqlQuery("SELECT value FROM resource_groups_global_properties WHERE name = 'cpu_quota_period'")
+    @UseRowMapper(ResourceGroupGlobalProperties.Mapper.class)
+    List<ResourceGroupGlobalProperties> getResourceGroupGlobalProperties();
 
     private String getSoftMemoryLimit(ResourceGroupSpec resourceGroupSpec)
     {
