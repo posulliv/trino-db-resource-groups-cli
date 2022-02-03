@@ -61,15 +61,11 @@ public class Cli
         }
 
         try {
-            DbResourceGroupConfig config = injector.getInstance(DbResourceGroupConfig.class);
             injector.injectMembers(this);
-            LOG.info("environment for resource groups %s", environment);
-            LOG.info("resource group DB URL %s", config.getConfigDbUrl());
-            LOG.info("resource group schema file %s", resourceGroupsSchema);
+            LOG.info("Environment to update resource groups for: %s", environment);
+            LOG.info("Input JSON file: %s", resourceGroupsSchema);
             ManagerSpec managerSpec = FileBasedResourceGroups.parseResourceGroupsSchema(resourceGroupsSchema);
-            LOG.info("we have %d root groups", managerSpec.getRootGroups().size());
             ResourceGroupsDao dao = injector.getInstance(ResourceGroupsDao.class);
-            LOG.info("CPU quota period %s", managerSpec.getCpuQuotaPeriod());
             dao.setCpuQuotaPeriod(managerSpec.getCpuQuotaPeriod().get().toString());
             // truncating resource_groups table will remove all rows
             // in tables with foreign key constraints on resource_groups
@@ -83,10 +79,10 @@ public class Cli
             int priority = managerSpec.getSelectors().size();
             for (SelectorSpec selector : managerSpec.getSelectors()) {
                 ResourceGroupIdTemplate resourceGroupIdTemplate = selector.getGroup();
-                LOG.info("selector %s has group %s", selector.getUserRegex(), resourceGroupIdTemplate);
                 dao.insertSelector(selector, priority);
                 priority--;
             }
+            LOG.info("Resource groups loaded successfully");
         }
         catch (Exception e) {
             throw new RuntimeException(e);
