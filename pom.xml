@@ -16,7 +16,7 @@
         <dep.airlift.version>209</dep.airlift.version>
         <dep.packaging.version>${dep.airlift.version}</dep.packaging.version>
         <dep.jdbi.version>3.23.0</dep.jdbi.version>
-        <main-class>io.trino.resourcegroups.db.Cli</main-class>
+        <main-class>io.trino.resourcegroups.db.TestCli</main-class>
     </properties>
 
     <dependencies>
@@ -67,6 +67,58 @@
             <artifactId>jdbi3-core</artifactId>
             <version>${dep.jdbi.version}</version>
         </dependency>
+
+        <!-- testing -->
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.22</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.14.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>jdbc</artifactId>
+            <version>1.16.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+            <version>1.16.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>oracle-xe</artifactId>
+            <version>1.16.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.16.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>7.4.0</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -120,7 +172,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -135,7 +187,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        io.trino.resourcegroups.db.Cli
+                                        io.trino.resourcegroups.db.TestCli
                                     </mainClass>
                                 </manifest>
                             </archive>

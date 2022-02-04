@@ -1,0 +1,57 @@
+{
+  "rootGroups": [
+    {
+      "name": "global",
+      "softMemoryLimit": "95%",
+      "hardConcurrencyLimit": 100,
+      "maxQueued": 1000,
+      "subGroups": [
+        {
+          "name": "adhoc",
+          "hardConcurrencyLimit": 50,
+          "maxQueued": 100,
+          "hardCpuLimit": "10h",
+          "subGroups": [
+            {
+              "name": "adhoc-${USER}",
+              "softMemoryLimit": "30%",
+              "hardConcurrencyLimit": 10,
+              "maxQueued": 10
+            }
+          ]
+        },
+        {
+          "name": "tableau",
+          "softMemoryLimit": "75%",
+          "hardConcurrencyLimit": 50,
+          "maxQueued": 100,
+          "subGroups": [
+            {
+              "name": "tableau-${USER}",
+              "softMemoryLimit": "40%",
+              "hardConcurrencyLimit": 10,
+              "maxQueued": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "admin",
+      "softMemoryLimit": "100%",
+      "hardConcurrencyLimit": 500,
+      "maxQueued": 100
+    }
+  ],
+  "selectors": [
+    {
+      "user": "bob",
+      "group": "admin"
+    },
+    {
+      "user": "verifier",
+      "group": "global.adhoc"
+    }
+  ],
+  "cpuQuotaPeriod": "1h"
+}

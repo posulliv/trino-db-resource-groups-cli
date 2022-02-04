@@ -123,7 +123,7 @@ public interface ResourceGroupsDao
     @UseRowMapper(ResourceGroupSpecBuilder.Mapper.class)
     List<ResourceGroupSpecBuilder> getResourceGroups(@Bind("environment") String environment);
 
-    @SqlQuery("SELECT S.resource_group_id, S.priority, S.user_regex, S.source_regex, S.query_type, S.client_tags, S.selector_resource_estimate, S.user_group_regex\n" +
+    @SqlQuery("SELECT S.resource_group_id, S.priority, S.user_regex, S.source_regex, S.query_type, S.client_tags, S.selector_resource_estimate\n" +
             "FROM selectors S\n" +
             "JOIN resource_groups R ON (S.resource_group_id = R.resource_group_id)\n" +
             "WHERE R.environment = :environment\n" +

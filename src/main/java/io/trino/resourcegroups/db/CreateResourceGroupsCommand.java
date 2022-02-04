@@ -96,6 +96,10 @@ public class CreateResourceGroupsCommand
             }
             LOG.info("Resource groups created successfully");
         }
+        catch (IllegalArgumentException iae) {
+            LOG.error(iae.getMessage());
+            throw new RuntimeException(iae.getMessage());
+        }
         catch (Exception e) {
             throw new RuntimeException(e);
         }
