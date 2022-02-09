@@ -12,7 +12,7 @@
         <project.build.targetJdk>11</project.build.targetJdk>
         <airbase.version>112</airbase.version>
         <air.modernizer.java-version>8</air.modernizer.java-version>
-        <dep.trino.version>368</dep.trino.version>
+        <dep.trino.version>370</dep.trino.version>
         <dep.airlift.version>209</dep.airlift.version>
         <dep.packaging.version>${dep.airlift.version}</dep.packaging.version>
         <dep.jdbi.version>3.23.0</dep.jdbi.version>
