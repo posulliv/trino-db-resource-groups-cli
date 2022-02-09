@@ -16,7 +16,7 @@
         <dep.airlift.version>209</dep.airlift.version>
         <dep.packaging.version>${dep.airlift.version}</dep.packaging.version>
         <dep.jdbi.version>3.23.0</dep.jdbi.version>
-        <main-class>io.trino.resourcegroups.db.TestCli</main-class>
+        <main-class>io.trino.resourcegroups.db.Cli</main-class>
     </properties>
 
     <dependencies>
@@ -194,7 +194,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        io.trino.resourcegroups.db.TestCli
+                                        io.trino.resourcegroups.db.Cli
                                     </mainClass>
                                 </manifest>
                             </archive>
