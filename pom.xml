@@ -12,7 +12,7 @@
         <project.build.targetJdk>11</project.build.targetJdk>
         <airbase.version>112</airbase.version>
         <air.modernizer.java-version>8</air.modernizer.java-version>
-        <dep.trino.version>370</dep.trino.version>
+        <dep.trino.version>371</dep.trino.version>
         <dep.airlift.version>209</dep.airlift.version>
         <dep.packaging.version>${dep.airlift.version}</dep.packaging.version>
         <dep.jdbi.version>3.23.0</dep.jdbi.version>
@@ -63,31 +63,31 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jdbi</groupId>
-            <artifactId>jdbi3-core</artifactId>
-            <version>${dep.jdbi.version}</version>
-        </dependency>
-
-        <!-- testing -->
-
-        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.22</version>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>3.14.0</version>
-            <scope>test</scope>
+            <groupId>org.jdbi</groupId>
+            <artifactId>jdbi3-core</artifactId>
+            <version>${dep.jdbi.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.3.1</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- testing -->
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.14.0</version>
             <scope>test</scope>
         </dependency>
 
