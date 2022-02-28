@@ -105,3 +105,17 @@ $
 ```
 
 This command will read the current resource groups from the database and write them to a JSON file at the specified path.
+
+## validate_resource_groups_json
+
+This command has no interaction with the resource groups database. It simple
+validates a JSON file with a resource group schema.
+
+```
+$ trino-db-resource-groups-cli validate_resource_groups_json --help
+Usage: trino-db-resource-groups-cli validate_resource_groups_json [-h] --resource-groups-json=<resourceGroupsSchema>
+  -h, --help   Show this help message and exit
+      --resource-groups-json=<resourceGroupsSchema>
+               JSON file with resource groups schema to validate
+$
+```
