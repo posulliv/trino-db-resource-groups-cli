@@ -20,7 +20,8 @@ import picocli.CommandLine;
         usageHelpAutoWidth = true,
         subcommands = {
                 CreateResourceGroupsCommand.class,
-                ListResourceGroupsCommand.class
+                ListResourceGroupsCommand.class,
+                ValidateResourceGroupsJsonCommand.class
         }
 )
 public class Cli
