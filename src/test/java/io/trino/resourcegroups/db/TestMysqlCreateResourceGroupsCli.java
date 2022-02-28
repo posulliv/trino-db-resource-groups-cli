@@ -63,6 +63,7 @@ public class TestMysqlCreateResourceGroupsCli
                 "     query_type VARCHAR(512),\n" +
                 "     client_tags VARCHAR(512),\n" +
                 "     selector_resource_estimate VARCHAR(1024),\n" +
+                "     user_group_regex VARCHAR(2048),\n" +
                 "     FOREIGN KEY (resource_group_id) REFERENCES resource_groups (resource_group_id) ON DELETE CASCADE\n" +
                 ");";
         Handle jdbiHandle = jdbi.open();

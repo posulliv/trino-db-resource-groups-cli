@@ -120,7 +120,7 @@ public abstract class BaseTestCreateResourceGroupsCli
                 "--db-config=" + dbPropertiesFile,
                 "--resource-groups-json=" + getResource("resource_group_with_subgroups.json").getPath()
         );
-        // now verify we have 2 root groups and 2 selectors
+        // now verify we have 2 root groups and 4 selectors
         DbResourceGroupConfig config = new DbResourceGroupConfig()
                 .setConfigDbUrl(container.getJdbcUrl())
                 .setConfigDbUser(container.getUsername())
@@ -130,6 +130,27 @@ public abstract class BaseTestCreateResourceGroupsCli
         assertEquals(managerSpec.getRootGroups().size(), 2);
         assertEquals(getTotalResourceGroupCount(managerSpec.getRootGroups()), 6);
         assertEquals(managerSpec.getSelectors().size(), 4);
+    }
+
+    @Test
+    public void testCreateWithUserGroupRegex()
+    {
+        TestCli.cli(
+                "create_resource_groups",
+                "--environment=" + ENVIRONMENT,
+                "--db-config=" + dbPropertiesFile,
+                "--resource-groups-json=" + getResource("resource_group_with_user_group_regex.json").getPath()
+        );
+        // now verify we have 2 root groups and 6 selectors
+        DbResourceGroupConfig config = new DbResourceGroupConfig()
+                .setConfigDbUrl(container.getJdbcUrl())
+                .setConfigDbUser(container.getUsername())
+                .setConfigDbPassword(container.getPassword());
+        DaoProvider daoProvider = new DaoProvider(config, jdbi);
+        ManagerSpec managerSpec = DbBasedResourceGroups.loadResourceGroupsFromDb(daoProvider.get(), ENVIRONMENT);
+        assertEquals(managerSpec.getRootGroups().size(), 2);
+        assertEquals(getTotalResourceGroupCount(managerSpec.getRootGroups()), 10);
+        assertEquals(managerSpec.getSelectors().size(), 6);
     }
 
     private String createPropertiesFile()

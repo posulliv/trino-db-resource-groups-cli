@@ -64,6 +64,7 @@ public interface ResourceGroupsDao
                 resourceGroupId,
                 priority,
                 getUserRegex(selectorSpec),
+                getUserGroupRegex(selectorSpec),
                 getSourceRegex(selectorSpec),
                 selectorSpec.getQueryType().orElse(null),
                 getClientTags(selectorSpec),
@@ -71,8 +72,8 @@ public interface ResourceGroupsDao
         );
     }
 
-    @SqlUpdate("INSERT INTO selectors (resource_group_id, priority, user_regex, source_regex, query_type, client_tags, selector_resource_estimate) VALUES (?, ?, ?, ?, ?, ?, ?)")
-    void insertSelector(int resourceGroupId, int priority, String userRegex, String sourceRegex, String queryType, String clientTags, String selectorResourceEstimate);
+    @SqlUpdate("INSERT INTO selectors (resource_group_id, priority, user_regex, user_group_regex, source_regex, query_type, client_tags, selector_resource_estimate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+    void insertSelector(int resourceGroupId, int priority, String userRegex, String userGroupRegex, String sourceRegex, String queryType, String clientTags, String selectorResourceEstimate);
 
     default int getResourceGroupId(ResourceGroupIdTemplate resourceGroupIdTemplate)
     {
@@ -123,7 +124,7 @@ public interface ResourceGroupsDao
     @UseRowMapper(ResourceGroupSpecBuilder.Mapper.class)
     List<ResourceGroupSpecBuilder> getResourceGroups(@Bind("environment") String environment);
 
-    @SqlQuery("SELECT S.resource_group_id, S.priority, S.user_regex, S.source_regex, S.query_type, S.client_tags, S.selector_resource_estimate\n" +
+    @SqlQuery("SELECT S.resource_group_id, S.priority, S.user_regex, S.source_regex, S.query_type, S.client_tags, S.selector_resource_estimate, S.user_group_regex\n" +
             "FROM selectors S\n" +
             "JOIN resource_groups R ON (S.resource_group_id = R.resource_group_id)\n" +
             "WHERE R.environment = :environment\n" +
@@ -181,6 +182,14 @@ public interface ResourceGroupsDao
     {
         if (selectorSpec.getUserRegex().isPresent()) {
             return selectorSpec.getUserRegex().get().toString();
+        }
+        return null;
+    }
+
+    private String getUserGroupRegex(SelectorSpec selectorSpec)
+    {
+        if (selectorSpec.getUserGroupRegex().isPresent()) {
+            return selectorSpec.getUserGroupRegex().get().toString();
         }
         return null;
     }

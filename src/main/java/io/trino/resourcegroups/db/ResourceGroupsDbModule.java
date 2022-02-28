@@ -22,6 +22,7 @@ import io.trino.plugin.resourcegroups.db.DbResourceGroupConfig;
 import org.jdbi.v3.core.Jdbi;
 
 import static io.airlift.configuration.ConfigBinder.configBinder;
+import static java.lang.String.format;
 
 public class ResourceGroupsDbModule
         extends AbstractConfigurationAwareModule
@@ -37,6 +38,40 @@ public class ResourceGroupsDbModule
     @Provides
     public Jdbi jdbi(DbResourceGroupConfig config)
     {
+        loadJdbcDriver(config.getConfigDbUrl());
         return Jdbi.create(config.getConfigDbUrl(), config.getConfigDbUser(), config.getConfigDbPassword());
+    }
+
+    // TODO - this seems to be required to guarantee JDBC drivers
+    // are loaded. Figure out how to remove  this hack.
+    private static void loadJdbcDriver(String configDbUrl)
+    {
+        if (configDbUrl.startsWith("jdbc:postgresql")) {
+            try {
+                Class.forName("org.postgresql.Driver");
+            }
+            catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        else if (configDbUrl.startsWith("jdbc:oracle")) {
+            try {
+                Class.forName("oracle.jdbc.driver.Driver");
+            }
+            catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        else if (configDbUrl.startsWith("jdbc:mysql")) {
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+            }
+            catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        else {
+            throw new IllegalArgumentException(format("Invalid JDBC URL: %s. Only PostgreSQL, MySQL, and Oracle are supported.", configDbUrl));
+        }
     }
 }
