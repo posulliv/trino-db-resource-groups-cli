@@ -75,22 +75,58 @@ public interface ResourceGroupsDao
     @SqlUpdate("INSERT INTO selectors (resource_group_id, priority, user_regex, user_group_regex, source_regex, query_type, client_tags, selector_resource_estimate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
     void insertSelector(int resourceGroupId, int priority, String userRegex, String userGroupRegex, String sourceRegex, String queryType, String clientTags, String selectorResourceEstimate);
 
-    default int getResourceGroupId(ResourceGroupIdTemplate resourceGroupIdTemplate)
+    // Old approach - had issues with collisions when multiple groups share the same name under different parents for example global.$(USER) and global2.$(USER)
+    // default int getResourceGroupId(ResourceGroupIdTemplate resourceGroupIdTemplate)
+    // {
+    //     if (resourceGroupIdTemplate.getSegments().isEmpty()) {
+    //         return -1; // TODO throw exception
+    //     }
+    //     // we need to find the resource group that matches the last segment
+    //     // of the resource group name template.
+    //     ResourceGroupNameTemplate resourceGroupName = resourceGroupIdTemplate.getSegments().get(resourceGroupIdTemplate.getSegments().size() - 1);
+    //     return getResourceGroupId(resourceGroupName.toString());
+    // }
+
+   // Fix resource group resolution by using full hierarchical path instead of group name.
+   // Prevents collisions when multiple groups share the same name under different parents for example global.$(USER) and global2.$(USER)
+
+    default int getResourceGroupId(ResourceGroupIdTemplate template)
     {
-        if (resourceGroupIdTemplate.getSegments().isEmpty()) {
-            return -1; // TODO throw exception
+        if (template.getSegments().isEmpty()) {
+            throw new IllegalArgumentException("Resource group template has no segments: " + template);
         }
-        // we need to find the resource group that matches the last segment
-        // of the resource group name template.
-        ResourceGroupNameTemplate resourceGroupName = resourceGroupIdTemplate.getSegments().get(resourceGroupIdTemplate.getSegments().size() - 1);
-        return getResourceGroupId(resourceGroupName.toString());
+
+        Integer parentId = null;
+
+        for (ResourceGroupNameTemplate segment : template.getSegments()) {
+            String name = segment.toString();
+            Integer id = getResourceGroupId(name, parentId);
+
+            if (id == null) {
+                throw new IllegalStateException("Resource group not found for segment '" + name +
+                        "' under parent '" + parentId + "' (full template: " + template + ")");
+            }
+
+            parentId = id;
+        }
+
+        return parentId;
     }
 
-    @SqlQuery("SELECT resource_group_id\n" +
-            "FROM resource_groups\n" +
-            "WHERE name = :name\n" +
-            "LIMIT 1")
-    int getResourceGroupId(@Bind("name") String name);
+    @SqlQuery("SELECT resource_group_id " +
+              "FROM resource_groups " +
+              "WHERE name = :name " +
+              "AND parent IS NOT DISTINCT FROM :parent " +
+              "LIMIT 1")
+    int getResourceGroupId(@Bind("name") String name, @Bind("parent") Integer parent);
+
+
+    // part of previous code
+    // @SqlQuery("SELECT resource_group_id\n" +
+    //         "FROM resource_groups\n" +
+    //         "WHERE name = :name\n" +
+    //         "LIMIT 1")
+    // int getResourceGroupId(@Bind("name") String name);
 
     default void insertResourceGroup(ResourceGroupSpec resourceGroupSpec, String environment, Integer parentId)
     {
