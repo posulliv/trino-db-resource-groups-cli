@@ -116,7 +116,7 @@ public interface ResourceGroupsDao
     @SqlQuery("SELECT resource_group_id " +
               "FROM resource_groups " +
               "WHERE name = :name " +
-              "AND parent IS NOT DISTINCT FROM :parent " +
+              "AND (parent = :parent OR (parent IS NULL AND :parent IS NULL)) " +
               "LIMIT 1")
     int getResourceGroupId(@Bind("name") String name, @Bind("parent") Integer parent);
 
